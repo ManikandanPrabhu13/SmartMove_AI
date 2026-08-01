@@ -47,10 +47,12 @@ class Vehicle:
         self.gps_status = "OK"
         self._gps_lost_ticks_remaining = 0
 
-        # How much of a waypoint segment to advance per move() call,
-        # roughly proportional to speed. Tuned so a full route loop
-        # takes a reasonable number of ticks for a live demo.
-        self._step_fraction = 0.08
+        # -----------------------------------------------------
+        # DEMO MODE
+        # Increased so vehicles travel much faster during
+        # the 1-minute hackathon presentation.
+        # -----------------------------------------------------
+        self._step_fraction = 0.35
 
     def calculate_heading(self, current, next_point):
         """
@@ -79,8 +81,7 @@ class Vehicle:
         """
         Randomly simulate GPS signal loss and recovery so the
         backend's GPS Recovery Engine has real scenarios to handle
-        during a live demo. GPS loss lasts a few consecutive ticks
-        once triggered, rather than flickering every tick.
+        during a live demo.
         """
 
         if self._gps_lost_ticks_remaining > 0:
@@ -92,11 +93,13 @@ class Vehicle:
 
             return
 
-        # Small chance per tick to enter a GPS-loss episode.
-        if random.random() < 0.04:
+        # Increased GPS-loss probability for demo
+        if random.random() < 0.10:
 
             self.gps_status = "LOST"
-            self._gps_lost_ticks_remaining = random.randint(3, 6)
+
+            # Faster recovery
+            self._gps_lost_ticks_remaining = random.randint(2, 4)
 
     def move(self):
         """
@@ -114,11 +117,13 @@ class Vehicle:
 
         self.heading = self.calculate_heading(current, next_point)
 
+        # Faster movement
         self.segment_progress += self._step_fraction
 
-        if self.segment_progress >= 1.0:
+        while self.segment_progress >= 1.0:
 
-            self.segment_progress = 0.0
+            self.segment_progress -= 1.0
+
             self.current_index += 1
 
             if self.current_index >= len(self.waypoints) - 1:
@@ -127,8 +132,12 @@ class Vehicle:
             current = self.waypoints[self.current_index]
             next_point = self.waypoints[self.current_index + 1]
 
+            self.heading = self.calculate_heading(current, next_point)
+
         self.latitude, self.longitude = self._interpolate(
-            current, next_point, self.segment_progress
+            current,
+            next_point,
+            self.segment_progress
         )
 
         # Natural speed variation around the base cruising speed.
