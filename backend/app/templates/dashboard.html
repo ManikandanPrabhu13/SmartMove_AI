@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartMove AI — Traffic Command Center</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link rel="stylesheet" href="/static/style.css">
+
+</head>
+<body>
+
+    <!-- ============ TOP BAR ============ -->
+    <header class="status-bar">
+
+        <div class="brand">
+            <i class="fa-solid fa-satellite-dish"></i>
+            <span class="brand-name">SmartMove<b>AI</b></span>
+            <span class="brand-tag">Traffic Command Center</span>
+        </div>
+
+        <div class="live-indicator" id="liveIndicator">
+            <span class="live-dot"></span> <span id="liveIndicatorText">LIVE</span>
+        </div>
+
+        <div class="status-right">
+            <div class="status-metric">
+                <i class="fa-solid fa-car-side"></i>
+                <span id="connectedVehicles">0</span> Vehicles Tracked
+            </div>
+            <div class="status-metric alert-metric">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <span id="activeAlertsCount">0</span> Alerts
+            </div>
+            <div class="status-clock" id="clock">--:--:--</div>
+        </div>
+
+    </header>
+
+    <!-- ============ TOP METRIC CARDS ============ -->
+    <section class="metric-grid">
+
+        <div class="metric-card risk">
+            <div class="metric-icon"><i class="fa-solid fa-radiation"></i></div>
+            <div class="metric-body">
+                <span class="metric-label">Highest AI Risk</span>
+                <span class="metric-value" id="metricHighestRisk">0%</span>
+            </div>
+        </div>
+
+        <div class="metric-card speed">
+            <div class="metric-icon"><i class="fa-solid fa-gauge-high"></i></div>
+            <div class="metric-body">
+                <span class="metric-label">Current Speed</span>
+                <span class="metric-value" id="metricSpeed">0 km/h</span>
+            </div>
+        </div>
+
+        <div class="metric-card driver">
+            <div class="metric-icon"><i class="fa-solid fa-id-badge"></i></div>
+            <div class="metric-body">
+                <span class="metric-label">Driver Score</span>
+                <span class="metric-value" id="metricDriverScore">--</span>
+            </div>
+        </div>
+
+        <div class="metric-card road">
+            <div class="metric-icon"><i class="fa-solid fa-road"></i></div>
+            <div class="metric-body">
+                <span class="metric-label">Road Health Index</span>
+                <span class="metric-value" id="metricRoadHealth">--</span>
+            </div>
+        </div>
+
+        <div class="metric-card gps">
+            <div class="metric-icon"><i class="fa-solid fa-location-crosshairs"></i></div>
+            <div class="metric-body">
+                <span class="metric-label">GPS Confidence</span>
+                <span class="metric-value" id="metricGpsConfidence">--</span>
+            </div>
+        </div>
+
+        <div class="metric-card alerts">
+            <div class="metric-icon"><i class="fa-solid fa-bell"></i></div>
+            <div class="metric-body">
+                <span class="metric-label">Active Alerts</span>
+                <span class="metric-value" id="metricActiveAlerts">0</span>
+            </div>
+        </div>
+
+        <div class="metric-card emergency">
+            <div class="metric-icon"><i class="fa-solid fa-truck-medical"></i></div>
+            <div class="metric-body">
+                <span class="metric-label">Emergency Count</span>
+                <span class="metric-value" id="metricEmergencyCount">0</span>
+            </div>
+        </div>
+
+    </section>
+
+    <!-- ============ VEHICLE SELECTOR ============ -->
+    <section class="vehicle-selector" id="vehicleSelector">
+        <span class="selector-label"><i class="fa-solid fa-crosshairs"></i> Focused Vehicle</span>
+        <div class="selector-tabs" id="selectorTabs">
+            <span class="empty-hint">Waiting for telemetry…</span>
+        </div>
+    </section>
+
+    <!-- ============ MAIN COMMAND GRID ============ -->
+    <main class="command-grid">
+
+        <!-- ===== LEFT : LIVE MAP ===== -->
+        <section class="panel map-panel">
+            <div class="panel-header">
+                <h2><i class="fa-solid fa-map-location-dot"></i> Live Command Map</h2>
+                <div class="map-controls">
+                    <div class="layer-toggle" id="mapLayerToggle">
+                        <button class="layer-btn active" data-layer="street" type="button">Street</button>
+                        <button class="layer-btn" data-layer="satellite" type="button">Satellite</button>
+                    </div>
+                    <div class="legend" id="mapLegend"></div>
+                </div>
+            </div>
+            <div id="map"></div>
+            <div class="active-zone-strip" id="activeZoneStrip">
+                <i class="fa-solid fa-draw-polygon"></i>
+                <span>Current Polygon:</span>
+                <b id="activeZoneLabel">None</b>
+            </div>
+        </section>
+
+        <!-- ===== CENTER : AI TRAFFIC VISUALIZATION ===== -->
+        <section class="panel traffic-panel">
+            <div class="panel-header">
+                <h2><i class="fa-solid fa-satellite"></i> AI Traffic Visualization</h2>
+                <span class="panel-sub" id="trafficSubjectLabel">—</span>
+            </div>
+
+            <div class="traffic-view-wrap">
+                <svg id="trafficView" viewBox="0 0 320 320" preserveAspectRatio="xMidYMid meet"></svg>
+                <div class="traffic-banner" id="overtakeBanner" style="display:none;">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                    <span id="overtakeBannerText"></span>
+                </div>
+            </div>
+
+            <div class="panel-subheader">
+                <h3><i class="fa-solid fa-list-check"></i> Nearby Vehicles</h3>
+            </div>
+            <div class="table-scroll nearby-scroll">
+                <table class="data-table" id="nearbyTable">
+                    <thead>
+                        <tr>
+                            <th>Vehicle</th>
+                            <th>Type</th>
+                            <th>Distance</th>
+                            <th>Rel. Speed</th>
+                            <th>Lane</th>
+                            <th>Blind Spot</th>
+                            <th>Overtake Status</th>
+                            <th>Recommendation</th>
+                        </tr>
+                    </thead>
+                    <tbody id="nearbyTableBody">
+                        <tr><td colspan="8" class="empty-hint">No nearby vehicles detected.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- EXPLAINABLE AI (shown only for HIGH risk) -->
+            <div class="panel-subheader">
+                <h3><i class="fa-solid fa-brain"></i> Explainable AI</h3>
+            </div>
+            <div id="explainableAiBody" class="ai-body">
+                <p class="empty-hint">No high-risk prediction currently active.</p>
+            </div>
+        </section>
+
+        <!-- ===== RIGHT : VEHICLE INFORMATION + ALERTS ===== -->
+        <aside class="right-column">
+
+            <section class="panel info-panel">
+                <div class="panel-header">
+                    <h2><i class="fa-solid fa-circle-info"></i> Vehicle Information</h2>
+                </div>
+                <div id="vehicleInfoBody" class="location-body">
+                    <p class="empty-hint">Select a vehicle to inspect.</p>
+                </div>
+            </section>
+
+            <section class="panel danger-panel">
+                <div class="panel-header">
+                    <h2><i class="fa-solid fa-skull-crossbones"></i> Danger Vehicles</h2>
+                    <span class="panel-sub" id="dangerCountLabel">0 Flagged</span>
+                </div>
+                <div id="dangerVehicleBody" class="danger-body">
+                    <p class="empty-hint">No dangerous vehicles detected.</p>
+                </div>
+            </section>
+
+            <section class="panel alert-panel">
+                <div class="panel-header">
+                    <h2><i class="fa-solid fa-bell"></i> Live Alerts</h2>
+                </div>
+                <div class="alert-feed" id="alertFeed">
+                    <p class="empty-hint">No alerts yet.</p>
+                </div>
+            </section>
+
+        </aside>
+
+    </main>
+
+    <!-- ============ ANALYTICS (collapsible) ============ -->
+    <details class="analytics-section" open>
+        <summary><i class="fa-solid fa-chart-line"></i> Fleet Analytics</summary>
+        <section class="chart-grid">
+
+            <div class="panel chart-panel">
+                <div class="panel-header"><h2><i class="fa-solid fa-chart-line"></i> Vehicle Speed</h2></div>
+                <canvas id="chartSpeed"></canvas>
+            </div>
+
+            <div class="panel chart-panel">
+                <div class="panel-header"><h2><i class="fa-solid fa-chart-pie"></i> Risk Distribution</h2></div>
+                <canvas id="chartRisk"></canvas>
+            </div>
+
+            <div class="panel chart-panel">
+                <div class="panel-header"><h2><i class="fa-solid fa-road-circle-exclamation"></i> Road Health</h2></div>
+                <canvas id="chartRoadHealth"></canvas>
+            </div>
+
+            <div class="panel chart-panel">
+                <div class="panel-header"><h2><i class="fa-solid fa-chart-column"></i> Alert Frequency</h2></div>
+                <canvas id="chartAlertFreq"></canvas>
+            </div>
+
+        </section>
+    </details>
+
+    <!-- Vehicle popup template (cloned via JS) -->
+    <template id="vehiclePopupTemplate">
+        <div class="vehicle-popup">
+            <h3 class="popup-id"></h3>
+            <div class="popup-row"><span>Type</span><b class="popup-type"></b></div>
+            <div class="popup-row"><span>Speed</span><b class="popup-speed"></b></div>
+            <div class="popup-row"><span>Heading</span><b class="popup-heading"></b></div>
+            <div class="popup-row"><span>Road Health</span><b class="popup-road"></b></div>
+            <div class="popup-row"><span>AI Risk</span><b class="popup-risk"></b></div>
+            <div class="popup-row"><span>Driver Score</span><b class="popup-driver"></b></div>
+            <div class="popup-row"><span>GPS Confidence</span><b class="popup-gps"></b></div>
+            <div class="popup-row"><span>Zone</span><b class="popup-zone"></b></div>
+            <div class="popup-row"><span>Overtake Status</span><b class="popup-overtake"></b></div>
+            <div class="popup-row"><span>Recommendation</span><b class="popup-rec"></b></div>
+        </div>
+    </template>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+    <script src="/static/map.js"></script>
+    <script src="/static/app.js"></script>
+
+</body>
+</html>

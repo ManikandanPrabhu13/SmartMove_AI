@@ -1,0 +1,14 @@
+fastapi
+uvicorn
+paho-mqtt
+redis
+sqlalchemy
+psycopg2-binary
+jinja2
+python-multipart
+shapely
+scikit-learn
+pandas
+numpy
+joblib
+websockets
