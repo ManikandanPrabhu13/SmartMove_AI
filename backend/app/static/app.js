@@ -61,7 +61,6 @@ document.addEventListener("DOMContentLoaded", () => {
     SmartMoveMap.init("map", [13.0835, 80.2715], 15);
     SmartMoveMap.setVehicleClickHandler(selectVehicle);
     renderMapLegend();
-    setupLayerToggle();
 
     setupTrafficView();
     initCharts();
@@ -79,24 +78,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }, 5000);
 });
-
-
-function setupLayerToggle() {
-
-    const wrap = document.getElementById("mapLayerToggle");
-    if (!wrap) return;
-
-    wrap.querySelectorAll(".layer-btn").forEach((btn) => {
-
-        btn.addEventListener("click", () => {
-
-            wrap.querySelectorAll(".layer-btn").forEach((b) => b.classList.remove("active"));
-            btn.classList.add("active");
-
-            SmartMoveMap.setLayer(btn.dataset.layer);
-        });
-    });
-}
 
 
 function renderMapLegend() {
@@ -556,6 +537,44 @@ function renderMapLayers() {
     }
 
     _renderActiveZoneStrip(selected);
+    _renderMapNearbyOverlay(selected);
+}
+
+
+/**
+ * Compact floating readout on the map itself: the nearest other
+ * active vehicle to the currently focused vehicle, with distance
+ * and relationship status. Makes the map a "hybrid" view rather
+ * than markers alone, without duplicating the full Nearby Vehicles
+ * table in the center panel.
+ */
+function _renderMapNearbyOverlay(subject) {
+
+    const body = document.getElementById("mapNearbyBody");
+    if (!body) return;
+
+    if (!subject) {
+        body.innerHTML = `<span class="empty-hint">No vehicle selected.</span>`;
+        return;
+    }
+
+    const relations = computeNearby(subject.vehicle_id);
+
+    if (relations.length === 0) {
+        body.innerHTML = `<span class="empty-hint">No nearby vehicles.</span>`;
+        return;
+    }
+
+    body.innerHTML = relations.slice(0, 3).map((rel) => `
+        <div class="overlay-vehicle-row">
+            <span>${rel.vehicleId} · ${rel.vehicleType || "-"}</span>
+            <b>${Math.round(rel.distance)}m</b>
+        </div>
+        <div class="overlay-vehicle-row">
+            <span class="status-pill ${rel.statusKey}" style="font-size:0.62rem;padding:1px 7px;">${rel.statusLabel}</span>
+            <b>${rel.relSpeed >= 0 ? "+" : ""}${Math.round(rel.relSpeed)} km/h</b>
+        </div>
+    `).join("");
 }
 
 

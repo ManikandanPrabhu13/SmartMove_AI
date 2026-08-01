@@ -119,15 +119,19 @@
         <section class="panel map-panel">
             <div class="panel-header">
                 <h2><i class="fa-solid fa-map-location-dot"></i> Live Command Map</h2>
-                <div class="map-controls">
-                    <div class="layer-toggle" id="mapLayerToggle">
-                        <button class="layer-btn active" data-layer="street" type="button">Street</button>
-                        <button class="layer-btn" data-layer="satellite" type="button">Satellite</button>
+                <div class="legend" id="mapLegend"></div>
+            </div>
+            <div class="map-wrap">
+                <div id="map"></div>
+                <div class="map-overlay" id="mapNearbyOverlay">
+                    <div class="overlay-row-header">
+                        <i class="fa-solid fa-radar"></i> Nearby Active
                     </div>
-                    <div class="legend" id="mapLegend"></div>
+                    <div id="mapNearbyBody" class="overlay-body">
+                        <span class="empty-hint">No nearby vehicles.</span>
+                    </div>
                 </div>
             </div>
-            <div id="map"></div>
             <div class="active-zone-strip" id="activeZoneStrip">
                 <i class="fa-solid fa-draw-polygon"></i>
                 <span>Current Polygon:</span>
