@@ -232,7 +232,3 @@ It gives you a `sim>` prompt where you can add/remove/edit vehicles while it's r
 | `GET /dashboard/summary` | summary stats for dashboard |
 
 ---
-
-## Config
-
-Most of the tunable numbers (thresholds, penalties, decay rates, vehicle types, etc.) are kept in one place: `backend/app/config.py`. Makes it easy to tweak things like GPS confidence decay rate, road hazard penalties, risk thresholds, or overtaking sensitivity without touching the actual logic.
