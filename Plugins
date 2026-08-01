@@ -1,0 +1,46 @@
+SMARTMOVE-AI - Plugins 
+
+Backend
+--------
+- FastAPI
+- Uvicorn
+- WebSockets
+- Jinja2
+- SQLAlchemy
+- psycopg2-binary
+- Redis (Python Client)
+- Paho MQTT
+- python-multipart
+
+AI & Machine Learning
+---------------------
+- Scikit-learn
+- Pandas
+- NumPy
+- Joblib
+
+GIS & Mapping
+-------------
+- Shapely
+- Leaflet.js
+- OpenStreetMap
+
+Frontend
+---------
+- HTML5
+- CSS3
+- JavaScript
+- Chart.js
+- Font Awesome
+
+External Services
+-----------------
+- Redis Server
+- MQTT Broker
+
+Development Tools
+-----------------
+- Python 3.x
+- Visual Studio Code
+- Git
+- GitHub
