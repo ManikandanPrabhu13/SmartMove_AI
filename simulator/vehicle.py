@@ -31,11 +31,7 @@ class Vehicle:
         self.base_speed = speed
         self.speed = speed
 
-        # Start from the first waypoint
         self.current_index = 0
-
-        # Fraction of progress (0.0 - 1.0) between current_index and
-        # current_index + 1, enabling smooth interpolated motion.
         self.segment_progress = 0.0
 
         self.latitude = waypoints[0][0]
@@ -43,22 +39,16 @@ class Vehicle:
 
         self.heading = 0
 
-        # GPS status simulation
         self.gps_status = "OK"
         self._gps_lost_ticks_remaining = 0
 
         # -----------------------------------------------------
         # DEMO MODE
-        # Increased so vehicles travel much faster during
-        # the 1-minute hackathon presentation.
+        # Increased movement speed for a 1-minute presentation.
         # -----------------------------------------------------
-        self._step_fraction = 0.35
+        self._step_fraction = 0.60
 
     def calculate_heading(self, current, next_point):
-        """
-        Calculate the compass direction of travel between two
-        (lat, lon) points.
-        """
 
         lat_diff = next_point[0] - current[0]
         lon_diff = next_point[1] - current[1]
@@ -78,11 +68,6 @@ class Vehicle:
         return lat, lon
 
     def _maybe_toggle_gps(self):
-        """
-        Randomly simulate GPS signal loss and recovery so the
-        backend's GPS Recovery Engine has real scenarios to handle
-        during a live demo.
-        """
 
         if self._gps_lost_ticks_remaining > 0:
 
@@ -93,20 +78,15 @@ class Vehicle:
 
             return
 
-        # Increased GPS-loss probability for demo
-        if random.random() < 0.10:
+        # Higher probability for demo
+        if random.random() < 0.12:
 
             self.gps_status = "LOST"
 
             # Faster recovery
-            self._gps_lost_ticks_remaining = random.randint(2, 4)
+            self._gps_lost_ticks_remaining = random.randint(2, 3)
 
     def move(self):
-        """
-        Advance the vehicle smoothly along its route, wrapping back
-        to the start once the final waypoint is reached, and update
-        simulated speed and GPS status.
-        """
 
         if self.current_index >= len(self.waypoints) - 1:
             self.current_index = 0
@@ -140,18 +120,18 @@ class Vehicle:
             self.segment_progress
         )
 
-        # Natural speed variation around the base cruising speed.
+        # Larger speed variation for demo
         self.speed = round(
-            max(5, self.base_speed + random.uniform(-8, 8)), 1
+            max(
+                20,
+                self.base_speed + random.uniform(-15, 20)
+            ),
+            1
         )
 
         self._maybe_toggle_gps()
 
     def get_data(self):
-        """
-        Return the current vehicle telemetry payload as published
-        over MQTT.
-        """
 
         return {
             "vehicle_id": self.vehicle_id,
